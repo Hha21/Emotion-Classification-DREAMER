@@ -3,7 +3,7 @@
 clear all
 clc
 
-load('DREAMER_no_ECG.mat');
+load('DREAMER.mat');
 
 theta_band = [4, 8];
 alpha_band = [8, 13];
@@ -42,7 +42,7 @@ for participant_idx = 1:length(DREAMER.Data)
             arousal = participant.ScoreArousal(experiment_idx);
             dominance = participant.ScoreDominance(experiment_idx);
 
-            labels_matrix = [labels_matrix; [valence, arousal dominance]];
+            labels_matrix = [labels_matrix; [valence, arousal, dominance]];
         end
     end
 end
