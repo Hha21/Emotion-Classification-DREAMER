@@ -21,6 +21,8 @@ for participant_idx = 1:length(DREAMER.Data)
         baseline_data = participant.EEG.baseline{experiment_idx, 1};
         stimuli_data = participant.EEG.stimuli{experiment_idx, 1};
 
+        stimuli_data = eeg_filter(stimuli_data, sample_rate);
+
         baseline_psd_log = compute_log_psd(baseline_data, sample_rate, theta_band, alpha_band, beta_band);
         num_samples = size(stimuli_data, 1);
         window_size = sample_rate;  %1s Window
@@ -69,10 +71,26 @@ function log_power = log_band_power(pxx, f, band)
     log_power = log(band_power);
 end
 
-% function filtered_data = bandstop_filter(eeg_data, fs, f_centre)
-%     f_bandwidth = 2;
-%     f_low = f_centre - f_bandwidth/2;
-%     f_high = f_centre + f_bandwidth/2;
-% 
-%     [b, a] = butter()
-% end
+function filtered_data = eeg_filter(eeg_data, fs)
+    % Notch filter to remove power-line noise @50Hz and
+    % a band-pass filter to retain frequencies in .1-100Hz range.
+
+    wo = 50 / (fs / 2);
+    bw = wo / 35;
+    [b_notch, a_notch] = iirnotch(wo, bw);
+
+    l_cutoff = 0.1;
+    h_cutoff = min(100, fs / 2 - 0.1);  %Limited by Nyquist freq. (128/2 Hz)
+    [b_bandpass, a_bandpass] = butter(4, [l_cutoff h_cutoff] / (fs / 2), 'bandpass');
+
+    filtered_data = zeros(size(eeg_data));
+
+    for channel = 1:size(eeg_data, 2)
+        eeg_channel = eeg_data(:, channel); 
+        eeg_channel_filtered = filtfilt(b_notch, a_notch, eeg_channel);
+        eeg_channel_filtered = filtfilt(b_bandpass, a_bandpass, eeg_channel_filtered);
+
+        filtered_data(:, channel) = eeg_channel_filtered;
+    end
+
+end
