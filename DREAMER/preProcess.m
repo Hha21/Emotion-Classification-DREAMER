@@ -68,3 +68,11 @@ function log_power = log_band_power(pxx, f, band)
     band_power = sum(pxx(band_idx));
     log_power = log(band_power);
 end
+
+% function filtered_data = bandstop_filter(eeg_data, fs, f_centre)
+%     f_bandwidth = 2;
+%     f_low = f_centre - f_bandwidth/2;
+%     f_high = f_centre + f_bandwidth/2;
+% 
+%     [b, a] = butter()
+% end
